@@ -3,6 +3,8 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles #* Este módulo permite servir archivos estáticos como imágenes, CSS, JavaScript, etc. asincronamente.
 from core.config import settings
+from db.session import engine #engine de db.session, que es una instancia de SQLAlchemy que permite conectar con la base de datos a través de funciones para crear, insertar, modificar y eliminar registros.
+from db.base_class import Base #Base de db.base_class, que es una clase de SQLAlchemy que se utiliza para crear una tabla en la base de datos
 
 """ Este código importa el objeto general_pages_router del módulo route_homepage que se encuentra en la carpeta 
 apis.general_pages
@@ -22,6 +24,10 @@ def configure_static(app):
     #* Este código configura el servidor para que sirva archivos estáticos (como imágenes, hojas de estilo y archivos de JavaScript)
     #* en una ruta determinada en lugar de siempre devolver una respuesta HTTP al procesar una petición.
     app.mount("/static", StaticFiles(directory="static"), name="static")
+    
+def create_tables():
+    #* Este código se utiliza para crear todas las tablas en una base de datos utilizando los modelos de SQLAlchemy.
+    Base.metadata.create_all(bind=engine)
 
 
 def start_application():
@@ -30,7 +36,7 @@ def start_application():
     app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
     include_router(app)
     configure_static(app)
-    
+    create_tables()
     return app
 
 app = start_application()

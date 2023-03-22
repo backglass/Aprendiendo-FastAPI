@@ -1,3 +1,15 @@
 fastapi
 uvicorn
+
+# Templates con Jinja2
 Jinja2
+
+# Servir archivos estaticos aiofiles permite servir archivos estaticos de manera asincrona
+aiofiles
+
+# Para la base de datos
+sqlalchemy
+psycopg2
+
+# Para la variables de entorno de la aplicación
+python-dotenv
