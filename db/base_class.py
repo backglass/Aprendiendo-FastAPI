@@ -5,7 +5,8 @@ from sqlalchemy.ext.declarative import as_declarative, declared_attr
 Los modelos son clases que representan una tabla en la base de datos y sus
 campos son variables de clase que representan las columnas. """ 
 
-
+ 
+ 
 @as_declarative()
 class Base:
     #* Este código se utiliza como una clase base para la definición de modelos de tablas
@@ -15,5 +16,6 @@ class Base:
     id: Any
     __name__: str
     
+    @declared_attr
     def __tablename__(cls) -> str:
         return cls.__name__.lower()
