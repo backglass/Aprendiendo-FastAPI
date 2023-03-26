@@ -3,6 +3,7 @@
 #* esa conexión. 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from typing import Generator
 
 #* Luego, se importa la variable 'DATABASE_URL' del módulo 'config' que contiene la URL de la base de datos,
 #* y se crea una instancia de conexión con la base de datos utilizando 'create_engine'. 
@@ -16,3 +17,13 @@ engine = create_engine(SQLALCHEMY_DATABASE_URL)
 #*  no se autocommite ni se autoflush, y el motor de la base de datos especificado al vincular la sesión
 #*  es el objeto de motor creado anteriormente.
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_db() -> Generator:
+    #* En resumen, esta función crea y devuelve una conexión a la base de datos que se puede usar
+    #* para hacer consultas o realizar transacciones, y asegura que la conexión se cierre correctamente
+    #* anulando cualquier transacción en caso de que ocurra algún error.
+    try:
+        db = SessionLocal()
+        yield db
+    finally:
+        db.close()    
