@@ -25,3 +25,18 @@ def create_new_job(job: JobCreate, db: Session, owner_id: int):
     db.commit()
     db.refresh(job_objet)
     return job_objet
+
+
+
+def retrieve_job(id: int, db: Session):
+    #* Este código define una función llamada 
+    #* retrieve_job
+    #* que toma dos argumentos: 
+    #* id que es un entero y db que es una sesión SQLAlchemy. La función usa la sesión 
+    
+    #* db para hacer una consulta a la base de datos para recuperar un trabajo (fila) en la tabla 
+    
+    #* "Job" donde el ID del trabajo sea igual al argumento id proporcionado.
+    #*Luego, la función devuelve la primera fila coincidente obtenida en la consulta.
+    job = db.query(Job).filter(Job.id == id).first()
+    return job
