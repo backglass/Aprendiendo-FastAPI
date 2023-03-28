@@ -7,6 +7,7 @@ from db.models.jobs import Job
 from schemas.jobs import JobCreate, ShowJob
 from db.repository.jobs import create_new_job
 from db.repository.jobs import retrieve_job
+from db.repository.jobs import list_jobs
 """
 Este código define un APIRouter desde la biblioteca FastAPI de Python y define un endpoint
 POST "/create-job". Cuando se llama a este endpoint, se crea una nueva tarea en la base de datos
@@ -41,3 +42,14 @@ def read_job(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Job with the id {id} is not available")
     # Si el trabajo existe, retornarlo
     return job
+
+
+#* Definimos la ruta '/all' y su método GET, especificando que devolverá una lista de
+# *ShowJob
+@router.get("/all", response_model=list[ShowJob])
+def read_jobs(db: Session = Depends(get_db)):
+    #* Obtenemos la lista de todos los trabajos
+    jobs = list_jobs(db=db)
+    
+    #* Retornamos la lista de trabajos
+    return jobs
