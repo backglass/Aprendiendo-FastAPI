@@ -40,3 +40,19 @@ def retrieve_job(id: int, db: Session):
     #*Luego, la función devuelve la primera fila coincidente obtenida en la consulta.
     job = db.query(Job).filter(Job.id == id).first()
     return job
+
+
+
+def list_jobs(db: Session):
+    """
+    
+    Este código define una función llamada 
+    list_jobs
+    que toma un argumento de base de datos db del tipo Session.
+    Dentro de la función, se realiza una consulta a la base de datos para obtener todos los trabajos
+    activos (Job.is_active == True) utilizando el método filter. Luego, se utilizó el método all()
+    para obtener una lista de todos los trabajos que cumplen la condición establecida en la consulta.
+    Finalmente, la función devuelve la lista de trabajos obtenida."""
+    
+    jobs = db.query(Job).filter(Job.is_active == True).all()
+    return jobs
