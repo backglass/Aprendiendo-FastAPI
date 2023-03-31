@@ -6,7 +6,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class Hasher():
     @staticmethod
-    def veryfy_password(plain_password, hashed_password):
+    def verify_password(plain_password, hashed_password):
         """verify_password" recibe una contraseña en texto plano y una contraseña cifrada, y 
         utiliza el objeto "pwd_context" de la instancia de "CryptContext" para verificar
         si la contraseña en texto plano coincide con la contraseña cifrada
