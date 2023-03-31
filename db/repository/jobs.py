@@ -56,3 +56,53 @@ def list_jobs(db: Session):
     
     jobs = db.query(Job).filter(Job.is_active == True).all()
     return jobs
+
+
+
+def update_job_by_id(id: int, job: JobCreate, db: Session, owner_id):
+    """ Este código define una función llamada update_job_by_id que toma cuatro argumentos. Los argumentos son:
+
+    id: un identificador entero de trabajo.
+    job: un objeto JobCreate.
+    db: un objeto de sesión SQLAlchemy.
+    owner_id: el identificador del propietario del trabajo.
+
+    La función busca un trabajo existente con el id proporcionado en la base de datos. Si no se encuentra un
+    trabajo, la función devuelve 0. Si se encuentra un trabajo, los valores del objeto job se convierten en
+    un diccionario, luego se actualiza el diccionario añadiendo owner_id. Se actualiza el trabajo existente
+    en la base de datos con los valores actualizados, y se guarda en la base de datos con db.commit().
+    Finalmente, la función devuelve 1. 
+    """
+    existing_job = db.query(Job).filter(Job.id == id) # Selecciona el trabajo existente con el id proporcionado.
+    if not existing_job.first(): # Si no se encuentra un trabajo existente con el id proporcionado, devuelve un 0.
+        return 0
+    job_dict = job.dict() # Convierte el objeto 'job' en un diccionario.
+    job_dict.update(owner_id=owner_id) # Actualiza el 'owner_id' en el diccionario.
+    existing_job.update(job_dict) # Actualiza el trabajo existente con la información actualizada.
+    db.commit() # Confirma los cambios en la base de datos.
+    return 1 # Devuelve un 1 si la actualización fue exitosa.
+
+
+
+def delete_job_by_id(id: int, db: Session, owner_id):
+    
+    """ Este código define una función llamada delete_job_by_id que elimina un trabajo específico de la base de datos en función de su id. 
+    La función toma tres argumentos: 
+
+    id: un entero que representa el id del trabajo que se desea eliminar.
+    db: una sesión de la base de datos.
+    owner_id: el id del usuario propietario del trabajo.
+
+    Primero, la función consulta la base de datos para obtener el trabajo con el id especificado, y si no existe, devuelve 0. Si el trabajo 
+    existe, se elimina y se realiza un commit para confirmar los cambios en la base de datos. Finalmente, la función devuelve 1 para indicar
+    que el trabajo ha sido eliminado con éxito. 
+    El parámetro synchronize_session del método delete se establece en False. Esto dice a SQLAlchemy que no
+    intente sincronizar la sesión de objeto (en este caso, la sesión db) con la base de datos después de la eliminación,
+    lo que puede ser más eficiente en algunos casos. """
+
+    existing_job = db.query(Job).filter(Job.id == id)
+    if not existing_job.first():
+        return 0
+    existing_job.delete(synchronize_session=False)
+    db.commit()
+    return 1
