@@ -1,8 +1,10 @@
-from fastapi.security import OAuth2PasswordRequestForm
+
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from fastapi import Depends, APIRouter
 from sqlalchemy.orm import Session
 from datetime import timedelta
 from fastapi import HTTPException, status
+from jose import jwt, JWTError
 
 from db.session import get_db
 from core.hashing import Hasher
@@ -14,7 +16,8 @@ from core.config import settings
 
 router = APIRouter()
 
-def authenticate_user(username: str, password: str, db: Session):
+
+def authenticate_user(username: str, password: str, db: Session = Depends(get_db)):
     user = get_user(username=username, db=db)
     print(user)
     if not user:
@@ -23,8 +26,12 @@ def authenticate_user(username: str, password: str, db: Session):
         return False
     return user
 
+
+
 @router.post("/token", response_model=Token)
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
+):
     user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(
@@ -32,26 +39,63 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
             detail="Incorrect username or password",
         )
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
-    
+    access_token = create_access_token(
+        data={"sub": user.email}, expires_delta=access_token_expires
+    )
     return {"access_token": access_token, "token_type": "bearer"}
 
-""" Este código es una API escrita con FastAPI para permitir la autenticación de usuario y devolver
-un token de acceso. La API utiliza la biblioteca "OAuth2PasswordBearer" para manejar el flujo del
-OAuth2 para autenticar al usuario.
 
-El primer paso en el código es crear una instancia de la clase "APIRouter()" para configurar el enrutador
-para la API. Luego, definimos una función "authenticate_user" que recibe un nombre de usuario, contraseña
-y una sesión de base de datos. La función busca al usuario en la base de datos correspondiente y verifica
-su contraseña. Si las credenciales son correctas, la función devuelve el objeto del usuario; de lo
-contrario, devuelve incorrecto.
 
-A continuación, definimos una ruta POST con decorador "@router.post("/token", response_model=Token)".
-Esta ruta sirve para el inicio de sesión y se espera que un usuario ingrese un usuario válido y una
-contraseña. La función "login_for_access_token" utiliza la función "authenticate_user" para verificar
-las credenciales de inicio de sesión y, si son válidas, devuelve un token de acceso con la duración 
-especificada en los parámetros de configuración de la API. """
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login/token")
 
-#* En resumen, este código es una API en FastAPI que ofrece una ruta para la autenticación de usuario
-#* y devuelve un token de acceso válido para el consumo de otros recursos.
-        
+
+def get_current_user_from_token(
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+    )
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+        print("payload is ", payload)
+        username: str = payload.get("sub")
+        print("username/email extracted is ", username)
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    user = get_user(username=username, db=db)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+"""
+Este código crea una ruta POST en un API con FastAPI. Esta ruta se encuentra en el endpoint
+/token. 
+
+Cuando se realiza una solicitud POST a esta ruta, los siguientes parámetros son requeridos
+para ser enviados a través del formulario de solicitud OAuth2:
+
+   - username: nombre de usuario del usuario que quiere logearse.
+   - password: contraseña del usuario que quiere logearse.
+   
+Si las credenciales ingresadas en el formulario coinciden con algún usuario y contraseña
+registrado en la base de datos, se genera un token JWT (JSON Web Token) con una fecha de
+expiración determinada. Se devuelve el token junto con el tipo de token (bearer) en una
+respuesta en formato JSON.
+
+Hay dos métodos implementados en el código que son llamados por la ruta POST:
+
+    - authenticate_user: verifica las credenciales ingresadas con las credenciales
+      registradas en la base de datos de usuarios.
+    - create_access_token: crea el token de acceso y lo retorna.  
+    
+Además, hay un método llamado get_current_user_from_token que se utiliza como dependencia para
+otras rutas de la API. Este método decodifica el token JWT y luego busca el usuario que
+coincide con los datos almacenados en el token. Si el usuario es encontrado, se retorna el
+usuario; de lo contrario, se devuelve una excepción HTTP.
+"""
