@@ -10,27 +10,26 @@ from db.repository.jobs import retrieve_job
 from db.repository.jobs import list_jobs
 from db.repository.jobs import update_job_by_id
 from db.repository.jobs import delete_job_by_id
-"""
-Este código define un APIRouter desde la biblioteca FastAPI de Python y define un endpoint
-POST "/create-job". Cuando se llama a este endpoint, se crea una nueva tarea en la base de datos
-utilizando los datos de entrada proporcionados por el usuario.
-Esto se realiza mediante el uso de las clases JobCreate y ShowJob en el archivo "schemas/jobs.py"
-para validar los datos de entrada y salida del usuario.
-También se usa la clase Job en "db/models/jobs.py" para leer y escribir datos de la base de datos.
-La clase create_new_job definida en "db/repository/jobs.py" se utiliza para crear un nuevo trabajo
-en la base de datos y, finalmente, se devuelve el trabajo recién creado al usuario.
-La clase retrieve_job definida en "db/repository/jobs.py" se utiliza para recuperar un trabajo
-"""
+from db.models.users import User
+from apis.version1.route_login import get_current_user_from_token
 
 
 
+
+# Creamos una instancia del enrutador
 router = APIRouter()
 
-
+# Creamos la ruta para crear trabajos
 @router.post("/create-job", response_model=ShowJob)
-def create_job(job: JobCreate, db: Session = Depends(get_db)):
-    current_user = 1
-    job = create_new_job(job=job, db=db, owner_id=current_user)
+def create_job(
+    job: JobCreate, # Recibimos los datos requeridos para crear un trabajo 
+    db: Session = Depends(get_db), # Dependemos de una conexión a la base de datos 
+    current_user: User = Depends(get_current_user_from_token), # Dependemos del usuario autenticado
+):
+    # Creamos un nuevo trabajo utilizando la función 'create_new_job'
+    job = create_new_job(job=job, db=db, owner_id=current_user.id)
+    
+    # Retornamos el trabajo creado
     return job
 
 
@@ -73,22 +72,39 @@ def update_job(id: int, job: JobCreate, db: Session = Depends(get_db)):
 
 
 @router.delete("/delete/{id}")
-def delete_job(id: int, db: Session = Depends(get_db)):
-    """ Este código define una ruta en un router utilizando el método HTTP DELETE y un parámetro de ruta llamado "id".
-    El controlador de ruta llama a una función llamada "delete_job_by_id" pasando el id del trabajo y la base de datos como argumentos.
-    También se define la variable current_user como 1, la cual se utiliza como argumento en la función delete_job_by_id a través del 
-    asignación owner_id=current_user. Si la función devuelve un mensaje exitoso, el controlador de ruta devuelve un mensaje de éxito en formato JSON.
-    Si la función devuelve "None" porque no se encontró ningún trabajo con la id especificada, se devuelve una excepción del tipo HTTPException
-    con un código de estado 404 y un mensaje detallando que el trabajo no fue encontrado."""
-
-    current_user = 1
-    message = delete_job_by_id(id=id, db=db, owner_id=current_user)
-    if not message:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Job with the id {id} is not found")
-    return {"msg": "Successfully deleted job"}
-    
-            
- 
- 
+def delete_job(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token),
+):
+    job = retrieve_job(id=id, db=db)
+    if not job:
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Job with {id} does not exist",
+        )
+    print(job.owner_id, current_user.id, current_user.is_superuser)
+    if job.owner_id == current_user.id or current_user.is_superuser:
+        delete_job_by_id(id=id, db=db, owner_id=current_user.id)
+        return {"msg": "Successfully deleted."}
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not permitted!!!!"
+    ) 
      
+"""
+La primera ruta es una solicitud POST para crear un nuevo trabajo con un propietario especificado.
+Retorna el trabajo creado como una respuesta JSON.
+
+La segunda ruta es una solicitud GET para recuperar un trabajo único por su ID. Si el trabajo no
+existe, levanta un error 404.
+
+La tercera ruta es una solicitud GET para recuperar una lista de todos los trabajos.
+
+La cuarta ruta es una solicitud PUT para actualizar un trabajo existente con el ID especificado.
+Si el trabajo no existe, levanta un error 404.
+
+La quinta ruta es una solicitud DELETE para eliminar un trabajo existente con el ID especificado.
+Verifica que el usuario autenticado sea el propietario del trabajo o un superusuario, de lo
+contrario, se levanta un error 401 no autorizado.
+"""
      
