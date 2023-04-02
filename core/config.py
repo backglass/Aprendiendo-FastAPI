@@ -27,8 +27,8 @@ class Settings:
     
     #Datos para token JWT
     SECRET_KEY: str = os.getenv("SECRET_KEY")
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ALGORITHM = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES = 30
        
 settings = Settings() # Importa esta configuración en tu archivo principal
 
