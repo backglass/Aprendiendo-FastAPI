@@ -11,5 +11,17 @@ aiofiles
 sqlalchemy
 psycopg2
 
+# Para validar email
+pydantic[email]
+
 # Para la variables de entorno de la aplicación
 python-dotenv
+
+# Para cifrado de contraseñas
+passlib[bcrypt]
+
+# Para la autenticación tokens
+python-jose
+
+# Para la autenticación también
+ python-multipart
