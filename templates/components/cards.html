@@ -1,0 +1,28 @@
+<div class="card shadow p-3 mb-2 bg-body rounded" style="width: 18rem;">
+    <div class="card-body">
+      <h5 class="card-title">{{obj.title}}</h5>
+      <p class="card-text">Company : {{obj.company}}</p>
+      <p class="card-text">Company URL : <a href="{{obj.company_url}}">{{obj.company_url}}</a></p>
+      <p class="card-text">Description : {{obj.description[:60]}}</p>
+      <a href="/jobs/detail/{{obj.id}}" class="btn btn-primary">Read more</a>
+    </div>
+  </div>
+
+
+<!-- El código es un bloque HTML que representa un "card" o tarjeta, comúnmente utilizada en el diseño de
+interfaces web. Este bloque contiene información proveniente de un objeto obj, y muestra información del
+título, compañía, URL, descripción y un botón de "Leer más". 
+
+En la línea 3 se establece el ancho de la tarjeta en 18 rem, y se le aplican sombras, padding, margen y un
+borde redondeado para fines de diseño. 
+  
+El título de la tarjeta se encuentra en la línea 4, y utiliza la sintaxis de doble llave de Jinga,
+para colocar el valor del título contenido en el objeto obj.
+  
+Existen dos líneas más con p-tags que muestran el nombre de la compañía y su URL respectivamente,
+utilizando la misma sintaxis que el título. 
+  
+La descripción de la tarjeta muestra los primeros 60 caracteres de obj.description. 
+  
+Finalmente, en la última línea se encuentra un "link" que conduce a otra página con más información sobre
+este objeto representado por esta tarjeta en específico. -->
