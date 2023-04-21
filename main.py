@@ -5,8 +5,11 @@ from fastapi.staticfiles import StaticFiles #* Este módulo permite servir archi
 from core.config import settings
 
 from db.session import engine #engine de db.session, que es una instancia de SQLAlchemy que permite conectar con la base de datos a través de funciones para crear, insertar, modificar y eliminar registros.
+
 from db.base import Base #Base que a su vez esta en de db.base_class
 from apis.base import api_router  #Importa las Rutas de la API
+from webapps.base import api_router as web_app_router #todo Importa las Rutas de la WebApp
+
 
 """ Este código importa el objeto general_pages_router del módulo route_homepage que se encuentra en la carpeta 
 apis.general_pages
@@ -21,6 +24,7 @@ def include_router(app):
     #* Básicamente, lo que esta función hace es agregar un conjunto predeterminado de rutas y controladores al
     #* objeto app para que pueda ser utilizado por un servidor web.
     app.include_router(api_router)
+    app.include_router(web_app_router) #todo Agrega las rutas de la WebApp
 
 def configure_static(app):
     #* Este código configura el servidor para que sirva archivos estáticos (como imágenes, hojas de estilo y archivos de JavaScript)
