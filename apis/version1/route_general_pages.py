@@ -7,6 +7,7 @@ from fastapi.templating import Jinja2Templates
 #* encuentran las plantillas. Si no se especifica ningún directorio, por
 #* defecto Jinja2 buscará las plantillas en un directorio llamado "templates" al nivel del
 #* directorio principal de la aplicación
+#! Será inutilizado cuando se construya la appweb porque esta ruta se manejara desde otro lado.
 templates = Jinja2Templates(directory="templates")
 general_pages_router = APIRouter()
 
