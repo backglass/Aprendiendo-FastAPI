@@ -1,0 +1,61 @@
+{% extends "shared/base.html" %}
+
+
+{% block title %}
+  <title>Job Detail</title>
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+  <div class="row">
+    <div class="col">
+      <h1 class="display-5">Job Detail</h1>
+    </div>
+  </div>
+
+  <div class="row">
+      <table class="table table-striped table-hover">
+        <tbody>
+          <tr>
+            <th scope="row">Job Title</th>
+            <td colspan="2">{{job.title}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Company</th>
+            <td colspan="2">{{job.company}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Company URL</th>
+            <td colspan="2">{{job.company_url}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Description</th>
+            <td colspan="2">{{job.description}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Location</th>
+            <td colspan="2">{{job.location}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Data Published</th>
+            <td colspan="2">{{job.date_posted}}</td>
+          </tr>
+        </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+
+
+<!-- Este código define un archivo HTML que usa como plantilla el archivo base.html (que se ha definido previamente).
+Dentro de esa plantilla se definen dos bloques, el primero para definir el título de la página y el segundo
+para definir el contenido (que contiene una tabla que muestra información sobre un trabajo).
+La información de la tabla se mostrará dinámicamente usando el lenguaje de plantilla de Django.
+La información del trabajo se muestra a través de la variable "job", que contiene los detalles del trabajo
+que se han pasado a esta plantilla.
+El resultado final será una página web que muestre los detalles de un trabajo de manera elegante y
+estructurada en forma de tabla. -->
+
+
+
