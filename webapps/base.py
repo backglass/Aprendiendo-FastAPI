@@ -1,5 +1,7 @@
-from webapps.jobs import route_jobs
 from fastapi import APIRouter
+
+from webapps.jobs import route_jobs
+from webapps.users import route_users
 
 """ Este código importa la función route_jobs del módulo webapps.jobs y la asocia con una instancia de la clase
 APIRouter de FastAPI para crear y configurar rutas de la API web. Luego, se incluye esta ruta dentro de otra
@@ -8,3 +10,4 @@ que se utilizará para organizar y documentar la API. """
 
 api_router = APIRouter()
 api_router.include_router(route_jobs.router, prefix="", tags=["job-webapp"])
+api_router.include_router(route_users.router, prefix="", tags=["user-webapp"])
