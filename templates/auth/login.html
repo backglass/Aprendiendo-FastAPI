@@ -1,0 +1,58 @@
+
+<!-- Este código es un template de Django que define una página de login para una aplicación llamada JobBoard.
+     Utiliza un template base (shared/base.html) como punto de inicio y extiende ese template para agregar
+     contenido específico a esta página. 
+
+     El código define dos bloques de contenido llamados "title" y "content". En el bloque "title", se establece
+     el título de la página. En el bloque "content", se define el contenido de la página, que incluye un
+     formulario de inicio de sesión con dos campos (email y password), un botón de envío y también manejo de
+     errores y mensajes. 
+
+     Hay dos secciones de manejo de mensajes, la primera muestra los errores al usuario (en caso de que haya
+     alguno) y la segunda muestra un mensaje de éxito en caso de que el inicio de sesión sea satisfactorio.
+     
+     En general, lo que hace este código es definir una plantilla HTML para una página de inicio de sesión
+      utilizando el framework de Django. -->
+     
+
+{% extends "shared/base.html" %}
+
+{% block title %}
+  <title>Login</title>
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <h5 class="display-5">Login to JobBoard</h5>
+      <div class="text-danger font-weight-bold">
+          {% for error in errors %}
+            <li>{{error}}</li>
+          {% endfor %}
+      </div>
+
+      <div class="text-success font-weight-bold">
+        {% if msg %}
+        <div class="badge bg-success text-wrap font-weight-bold" style="font-size: large;">
+          {{msg}}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+
+    <div class="row my-5">
+      <form method="POST">
+        <div class="mb-3">
+          <label>Email</label>
+          <input type="text" required placeholder="Your email" name="email" value="{{email}}" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label>Password</label>
+          <input type="password" required placeholder="Choose a secure password" value="{{password}}" name="password" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+  </div>
+  {% endblock %}
