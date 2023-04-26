@@ -9,6 +9,14 @@ from db.repository.jobs import list_jobs
 from db.session import get_db
 from db.repository.jobs import retrieve_job
 
+from db.models.users import User
+from apis.version1.route_login import get_current_user_from_token
+from webapps.jobs.forms import JobCreateForm
+from schemas.jobs import JobCreate
+from db.repository.jobs import create_new_job
+from fastapi import responses, status
+from fastapi.security.utils import get_authorization_scheme_param
+
 #* Creamos una variable templates que permitirá cargar plantillas HTML
 templates = Jinja2Templates(directory="templates")
 
@@ -18,7 +26,9 @@ router = APIRouter(include_in_schema=False)
 #* Definimos la ruta principal de la API "/"
 @router.get("/")
 async def home(request: Request, db: Session=Depends(get_db),msg: str = None):
-
+    """Se llama a la función list_jobs() que lista todos los trabajos en la base de datos.
+       Luego, la plantilla HTML 'homepage.html' se inserta con la lista de trabajos y un mensaje opcional."""
+    
     jobs = list_jobs(db=db)
     print ("jobs: ", jobs)
     return templates.TemplateResponse("general_pages/homepage.html", {"request": request, "jobs": jobs, "msg": msg})
@@ -26,18 +36,82 @@ async def home(request: Request, db: Session=Depends(get_db),msg: str = None):
 
 @router.get("/details/{id}")
 def job_detail(id: int, request: Request, db: Session=Depends(get_db)):
+    """Toma un parámetro de "id" que especifica el trabajo a mostrar. Luego llama a la función retrieve_job()
+       que busca el trabajo en la base de datos utilizando el "id" especificado. Finalmente, se carga la
+       plantilla HTML 'detail.html' y se muestra el trabajo en la página."""
+       
     job = retrieve_job(id=id, db=db)
     print("job: ")
     return templates.TemplateResponse("jobs/detail.html", {"request": request, "job": job})
 
+@router.get("/post-a-job")
+def create_job(request: Request, db: Session=Depends(get_db)):
+    """un controlador para la página de creación de trabajos. Simplemente carga la plantilla HTML
+      'create_job.html' y muestra el formulario para crear trabajos."""
+      
+    return templates.TemplateResponse("jobs/create_job.html", {"request": request})
+
+@router.post("/post-a-job")
+async def create_job(request: Request, db: Session=Depends(get_db)):
+    """se llama cuando el usuario presenta un formulario de creación de trabajo. En primer lugar, se carga el
+       formulario con los datos presentados por el usuario.
+       Luego, se verifica si el formulario es válido (por ejemplo, si se proporcionaron todos los campos
+       obligatorios).
+       Si el formulario es válido, se verifica la autenticación del usuario a través del token de acceso que
+       se encuentra en las cookies de la solicitud. Se llama a la función get_current_user_from_token()
+       para obtener información del usuario del token de acceso. Si se encuentra un usuario válido,
+       se crea un nuevo trabajo con la información del formulario de creación de trabajo y se agrega a la
+       base de datos utilizando la función create_new_job().
+       Finalmente, se redirige al usuario a la página de detalles del trabajo recién creado.
+       Si ocurre algún error, se muestra el formulario de creación de trabajo con los errores apropiados."""
+       
+    
+    # Se crea un objeto formulario para crear un trabajo
+    form = JobCreateForm(request)
+
+    # Se carga la información enviada en el formulario
+    await form.load_data()
+
+    # Si el formulario es válido
+    if form.is_valid():
+
+        try:
+            # Se obtiene el token de acceso de las cookies de la solicitud
+            token = request.cookies.get("access_token")
+
+            # Se obtiene el emblema de autorización y los parámetros del token de acceso
+            scheme, param = get_authorization_scheme_param(token)
+
+            # Se obtiene al usuario actual a través del token de acceso
+            current_user : User = get_current_user_from_token(token=param, db=db)
+
+            # Se crea una nueva oferta de trabajo con los datos enviados del formulario
+            job = JobCreate(**form.__dict__)
+
+            # Se asigna el propietario de la oferta de trabajo
+            job = create_new_job(job=job, db=db, owner_id=current_user.id)
+
+            # Se redirecciona a la página de detalles de la nueva oferta de trabajo creada
+            return responses.RedirectResponse(f"/details/{job.id}", status_code=status.HTTP_302_FOUND)
+
+        except Exception as e:
+            # En caso de que no se pueda crear una nueva oferta de trabajo, se muestra un mensaje de error
+            print(e)
+            form.__dict__.get("errors").append("You are not logged in")
+
+            # Se devuelve una plantilla de respuesta de formulario HTML para que el usuario corrija los errores
+            return templates.TemplateResponse("jobs/create_job.html", form.__dict__)
+
+    # Si el formulario no es válido, se devuelve una plantilla de respuesta de formulario HTML para que el usuario corrija los errores
+    return templates.TemplateResponse("jobs/create_job.html", form.__dict__)
+
+
 """ 
-La variable templates se usa para cargar plantillas HTML que se mostrarán en la página web.
-La ruta principal de la API es la página de inicio y se define en la ruta "/" usando el método GET.
-Esto devuelve una página HTML personalizada que incluye trabajos listados.
-
-
-Además, existe otra ruta llamada "/details" que se utiliza para mostrar detalles de un trabajo en
-particular, siendo id el identificador único de cada trabajo. Cuando el usuario navega a la página
-"/details/{id}", se muestra una plantilla HTML personalizada con detalles de ese trabajo. """
+Este código crea un API Router utilizando FastAPI y define varias rutas para crear, leer y actualizar trabajos
+en una base de datos. También se utiliza Jinja2Templates para cargar plantillas HTML. El código proporciona
+funciones para listar trabajos, obtener detalles de trabajos, crear nuevos trabajos y mostrar formularios para
+crear y editar trabajos. Cada ruta define su propia lógica para interactuar con la base de datos y/o
+formularios. Las funciones también dependen de una sesión de base de datos. Adicionalmente, se implementa 
+la seguridad con tokens de usuario. """
 
 
