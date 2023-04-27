@@ -105,6 +105,14 @@ async def create_job(request: Request, db: Session=Depends(get_db)):
     # Si el formulario no es válido, se devuelve una plantilla de respuesta de formulario HTML para que el usuario corrija los errores
     return templates.TemplateResponse("jobs/create_job.html", form.__dict__)
 
+@router.get("/delete-job/")
+def show_jobs_to_delete(request: Request, db: Session=Depends(get_db)):
+    """Se muestra una lista de trabajos que el usuario puede eliminar. Se carga la plantilla HTML
+       'delete_job.html' con la lista de trabajos."""
+       
+    jobs = list_jobs(db=db)
+    return templates.TemplateResponse("jobs/show_jobs_to_delete.html", {"request": request, "jobs": jobs})
+
 
 """ 
 Este código crea un API Router utilizando FastAPI y define varias rutas para crear, leer y actualizar trabajos
