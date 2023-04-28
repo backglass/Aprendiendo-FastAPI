@@ -106,3 +106,13 @@ def delete_job_by_id(id: int, db: Session, owner_id):
     existing_job.delete(synchronize_session=False)
     db.commit()
     return 1
+
+
+def search_job(query: str, db: Session):
+    """Dentro de la función, se realiza una consulta a la base de datos haciendo uso del objeto Session de
+       SQLAlchemy. La consulta busca todos los trabajos (jobs) que tienen el término de búsqueda (query)
+       en su título (Job.title), usando el método filter y el método contains de SQLAlchemy."""
+       
+    jobs = db.query(Job).filter(Job.title.contains(query))
+    print(jobs)
+    return jobs
