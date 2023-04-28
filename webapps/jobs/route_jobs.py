@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from db.repository.jobs import list_jobs
 from db.session import get_db
 from db.repository.jobs import retrieve_job
+from db.repository.jobs import search_job
 
 from db.models.users import User
 from apis.version1.route_login import get_current_user_from_token
@@ -16,6 +17,9 @@ from schemas.jobs import JobCreate
 from db.repository.jobs import create_new_job
 from fastapi import responses, status
 from fastapi.security.utils import get_authorization_scheme_param
+
+from typing import Optional
+
 
 #* Creamos una variable templates que permitirá cargar plantillas HTML
 templates = Jinja2Templates(directory="templates")
@@ -108,12 +112,29 @@ async def create_job(request: Request, db: Session=Depends(get_db)):
 @router.get("/delete-job/")
 def show_jobs_to_delete(request: Request, db: Session=Depends(get_db)):
     """Se muestra una lista de trabajos que el usuario puede eliminar. Se carga la plantilla HTML
-       'delete_job.html' con la lista de trabajos."""
+       'show_jobs_to_delete.html' con la lista de trabajos."""
        
     jobs = list_jobs(db=db)
     return templates.TemplateResponse("jobs/show_jobs_to_delete.html", {"request": request, "jobs": jobs})
 
 
+
+@router.get("/search/")
+def search(request: Request, db: Session=Depends(get_db), query: Optional[str] = None):
+    """"request" que representa la solicitud HTTP.
+        "db" que es una instancia de la sesión de la base de datos.
+        "query" que es un parámetro opcional que se utiliza para determinar qué datos deben ser buscados
+        en la base de datos.
+        
+        La función utiliza el parámetro "query" para buscar trabajos en la base de datos llamando a otra
+        función llamada "search_job". Luego, la función devuelve una respuesta HTTP renderizando un archivo
+        de plantilla HTML llamado "homepage.html" que se encuentra en una carpeta llamada "general_pages"
+        junto con los trabajos encontrados.
+        """
+    jobs = search_job(query, db=db)
+    return templates.TemplateResponse("general_pages/homepage.html", {"request": request, "jobs": jobs})
+
+#! Explicar de nuevo lo de abajo con codeGpt
 """ 
 Este código crea un API Router utilizando FastAPI y define varias rutas para crear, leer y actualizar trabajos
 en una base de datos. También se utiliza Jinja2Templates para cargar plantillas HTML. El código proporciona
