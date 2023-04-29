@@ -10,6 +10,9 @@ from db.repository.jobs import retrieve_job
 from db.repository.jobs import list_jobs
 from db.repository.jobs import update_job_by_id
 from db.repository.jobs import delete_job_by_id
+from db.repository.jobs import search_job
+
+from typing import Optional
 from db.models.users import User
 from apis.version1.route_login import get_current_user_from_token
 
@@ -90,6 +93,19 @@ def delete_job(
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not permitted!!!!"
     ) 
+
+# 
+@router.get("/autocomplete")
+def autocomplete(term: Optional[str] = None, db: Session = Depends(get_db)):
+    """Este código crea un endpoint llamado "autocomplete" que tiene la opción de recibir un término de
+       búsqueda y una conexión a una base de datos. Utiliza la función "search_job" para buscar títulos de
+       trabajo que contengan el término de búsqueda y retorna una lista de esos títulos."""
+       
+    jobs = search_job(term, db=db)
+    job_titles = []
+    for job in jobs:
+        job_titles.append(job.title)
+    return job_titles
      
 """
 La primera ruta es una solicitud POST para crear un nuevo trabajo con un propietario especificado.
